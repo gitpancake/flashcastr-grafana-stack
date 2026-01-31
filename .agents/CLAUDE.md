@@ -4,28 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Project Overview
 
-Flashcastr Grafana Stack is a monitoring and observability solution for the Flashcastr/Space Invaders services. It deploys Prometheus and Grafana on Railway to scrape metrics from the producer (invaders.bot) and consumer (invaders.consumer) services.
+Flashcastr Grafana Stack is a monitoring and observability solution for the Flashcastr/Space Invaders services. It deploys Prometheus and Grafana on Railway to scrape metrics from all three services.
 
 ## Architecture
 
 ```
-┌─────────────────────┐     ┌─────────────────────┐
-│   invaders.bot      │     │  invaders.consumer  │
-│   (Producer)        │     │     (Consumer)      │
-│   Port 9090         │     │     Port 9091       │
-└──────────┬──────────┘     └──────────┬──────────┘
-           │                           │
-           └───────────┬───────────────┘
-                       ▼
-              ┌─────────────────┐
-              │   Prometheus    │
-              │   (Scraper)     │
-              └────────┬────────┘
-                       ▼
-              ┌─────────────────┐
-              │    Grafana      │
-              │  (Dashboards)   │
-              └─────────────────┘
+┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐
+│   invaders.bot      │  │  invaders.consumer  │  │   flashcastr.api    │
+│   (Producer)        │  │     (Consumer)      │  │      (API)          │
+│   Port 9090         │  │     Port 9091       │  │     Port 9092       │
+└──────────┬──────────┘  └──────────┬──────────┘  └──────────┬──────────┘
+           │                        │                        │
+           └────────────────────────┼────────────────────────┘
+                                    ▼
+                           ┌─────────────────┐
+                           │   Prometheus    │
+                           │   (Scraper)     │
+                           └────────┬────────┘
+                                    ▼
+                           ┌─────────────────┐
+                           │    Grafana      │
+                           │  (Dashboards)   │
+                           └─────────────────┘
 ```
 
 ## Project Structure
@@ -37,7 +37,7 @@ flashcastr-grafana-stack/
 │   └── dockerfile            # Custom Prometheus image with env var substitution
 ├── grafana/
 │   ├── dashboards/
-│   │   ├── service-status.json   # Service health, uptime, memory, errors
+│   │   ├── service-status.json   # Service health, uptime, memory, API metrics
 │   │   └── flashes.json          # Flash processing metrics
 │   ├── provisioning/
 │   │   ├── dashboards/
@@ -51,13 +51,16 @@ flashcastr-grafana-stack/
 ## Dashboards
 
 ### Service Status Dashboard
-- Service uptimes (Producer & Consumer)
+- Service uptimes (Producer, Consumer, API)
 - Circuit breaker status
-- Consecutive failures
 - Last activity timestamps
-- Memory usage (heap & RSS)
+- Memory usage (heap & RSS) for all services
 - Uptime history graphs
-- API call rates with success/error breakdown
+- Producer & Consumer error rates
+- Flashcastr API metrics (requests, duration, errors)
+- Active users and total flashes
+- Cache performance (hits/misses)
+- Neynar API call rates
 - Error totals
 
 ### Flashes Processing Dashboard
@@ -76,24 +79,24 @@ flashcastr-grafana-stack/
 
 The Prometheus dockerfile uses sed-based substitution for these variables:
 
-- `INVADERS_BOT_TARGET` - Producer metrics endpoint (e.g., `producer.railway.internal:9090` or `invadersbot-production.up.railway.app`)
+- `INVADERS_BOT_TARGET` - Producer metrics endpoint (e.g., `producer.railway.internal:9090`)
 - `INVADERS_CONSUMER_TARGET` - Consumer metrics endpoint (e.g., `consumer.flashcastr.app`)
+- `FLASHCASTR_API_TARGET` - API metrics endpoint (e.g., `api.flashcastr.app`)
 
 ## Deployment on Railway
 
 1. Deploy from this repo on Railway
 2. Set environment variables for the Prometheus service:
-   - `INVADERS_BOT_TARGET` - Internal or public URL for producer
-   - `INVADERS_CONSUMER_TARGET` - Internal or public URL for consumer
+   - `INVADERS_BOT_TARGET`
+   - `INVADERS_CONSUMER_TARGET`
+   - `FLASHCASTR_API_TARGET`
 3. The Grafana dashboards are automatically provisioned
 
 ## Local Development
 
 ```bash
-# Start the stack locally
 docker-compose up -d
 
-# Access services
 # Prometheus: http://localhost:9090
 # Grafana: http://localhost:3000 (admin/admin)
 ```
@@ -123,6 +126,21 @@ docker-compose up -d
 - `invaders_consumer_consecutive_failures` - Consecutive failures
 - `invaders_consumer_uptime_seconds` - Service uptime
 - `invaders_consumer_memory_bytes{type}` - Memory usage
+
+### API (flashcastr.api) - Port 9092
+- `flashcastr_api_graphql_requests_total{operation_type, operation_name}` - GraphQL requests
+- `flashcastr_api_graphql_errors_total{operation_type, operation_name}` - GraphQL errors
+- `flashcastr_api_graphql_duration_seconds` - Request duration histogram
+- `flashcastr_api_signups_initiated_total` - Signups started
+- `flashcastr_api_signups_completed_total` - Signups completed
+- `flashcastr_api_users_deleted_total` - Users deleted
+- `flashcastr_api_cache_hits_total{cache_name}` - Cache hits
+- `flashcastr_api_cache_misses_total{cache_name}` - Cache misses
+- `flashcastr_api_neynar_requests_total{endpoint, status}` - Neynar API calls
+- `flashcastr_api_active_users_total` - Active users (gauge)
+- `flashcastr_api_total_flashes` - Total flashes (gauge)
+- `flashcastr_api_uptime_seconds` - Service uptime
+- `flashcastr_api_memory_bytes{type}` - Memory usage
 
 ## Adding New Panels
 

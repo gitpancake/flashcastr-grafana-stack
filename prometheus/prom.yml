@@ -17,3 +17,9 @@ scrape_configs:
     static_configs:
       - targets: ["${INVADERS_CONSUMER_TARGET}"]
     metrics_path: /metrics
+
+  - job_name: "flashcastr-api"
+    scheme: https
+    static_configs:
+      - targets: ["${FLASHCASTR_API_TARGET}"]
+    metrics_path: /metrics

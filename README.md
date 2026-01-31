@@ -1,22 +1,27 @@
 # Flashcastr Grafana Stack
 
-Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus and Grafana on Railway to monitor the producer (invaders.bot) and consumer (invaders.consumer) services.
+Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus and Grafana on Railway to monitor all three services.
 
 ## Services Monitored
 
-- **invaders.bot (Producer)** - Syncs flash data from Space Invaders API, publishes to RabbitMQ and Farcaster
-- **invaders.consumer (Consumer)** - Processes flashes, uploads images to IPFS, updates PostgreSQL
+| Service | Description | Metrics Port |
+|---------|-------------|--------------|
+| **invaders.bot** (Producer) | Syncs flash data from Space Invaders API, publishes to RabbitMQ and Farcaster | 9090 |
+| **invaders.consumer** (Consumer) | Processes flashes, uploads images to IPFS, updates PostgreSQL | 9091 |
+| **flashcastr.api** (API) | GraphQL API for Flashcastr app, user management, leaderboards | 9092 |
 
 ## Dashboards
 
 ### Service Status
-Health and system metrics for both services:
-- Service uptimes
+Health and system metrics for all services:
+- Service uptimes (Producer, Consumer, API)
 - Circuit breaker status
 - Memory usage (heap & RSS)
 - API call success/error rates
-- Error totals and consecutive failures
-- Last activity timestamps
+- GraphQL request metrics and durations
+- Cache performance (hits/misses)
+- Neynar API call rates
+- Error totals
 
 ### Flashes Processing
 Flash processing pipeline metrics:
@@ -38,6 +43,7 @@ Flash processing pipeline metrics:
    ```
    INVADERS_BOT_TARGET=producer.railway.internal:9090
    INVADERS_CONSUMER_TARGET=consumer.flashcastr.app
+   FLASHCASTR_API_TARGET=api.flashcastr.app
    ```
 3. Dashboards are automatically provisioned in Grafana
 
@@ -99,6 +105,24 @@ docker-compose up -d
 | `invaders_consumer_uptime_seconds` | Gauge | Service uptime |
 | `invaders_consumer_memory_bytes{type}` | Gauge | Memory usage |
 
+### API Metrics (Port 9092)
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `flashcastr_api_graphql_requests_total` | Counter | GraphQL requests by operation |
+| `flashcastr_api_graphql_errors_total` | Counter | GraphQL errors by operation |
+| `flashcastr_api_graphql_duration_seconds` | Histogram | Request duration |
+| `flashcastr_api_signups_initiated_total` | Counter | Signup initiations |
+| `flashcastr_api_signups_completed_total` | Counter | Completed signups |
+| `flashcastr_api_users_deleted_total` | Counter | User deletions |
+| `flashcastr_api_cache_hits_total{cache_name}` | Counter | Cache hits |
+| `flashcastr_api_cache_misses_total{cache_name}` | Counter | Cache misses |
+| `flashcastr_api_neynar_requests_total` | Counter | Neynar API calls |
+| `flashcastr_api_active_users_total` | Gauge | Active users |
+| `flashcastr_api_total_flashes` | Gauge | Total flashes |
+| `flashcastr_api_uptime_seconds` | Gauge | Service uptime |
+| `flashcastr_api_memory_bytes{type}` | Gauge | Memory usage |
+
 ## Customization
 
 ### Adding Panels
@@ -112,6 +136,7 @@ docker-compose up -d
 Update the environment variables in Railway:
 - `INVADERS_BOT_TARGET` - Producer metrics URL
 - `INVADERS_CONSUMER_TARGET` - Consumer metrics URL
+- `FLASHCASTR_API_TARGET` - API metrics URL
 
 ---
 
