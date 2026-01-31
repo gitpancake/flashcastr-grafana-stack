@@ -10,3 +10,6 @@ COPY provisioning/dashboards /etc/grafana/provisioning/dashboards
 
 # copy the dashboards
 COPY dashboards /etc/grafana/dashboards
+
+# set default home dashboard
+COPY grafana.ini /etc/grafana/grafana.ini
