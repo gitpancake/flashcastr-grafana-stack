@@ -1,163 +1,118 @@
-# Grafana Stack on Railway
+# Flashcastr Grafana Stack
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/template/8TLSQD?referralCode=IFlm92)
+Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus and Grafana on Railway to monitor the producer (invaders.bot) and consumer (invaders.consumer) services.
 
-## What is this template
+## Services Monitored
 
-This template deploys a complete Grafana observability stack on Railway with just one click! The stack includes four integrated services:
+- **invaders.bot (Producer)** - Syncs flash data from Space Invaders API, publishes to RabbitMQ and Farcaster
+- **invaders.consumer (Consumer)** - Processes flashes, uploads images to IPFS, updates PostgreSQL
 
-- **Grafana**: The leading open-source analytics and monitoring solution
-- **Loki**: A horizontally-scalable, highly-available log aggregation system
-- **Prometheus**: A powerful metrics collection and alerting system
-- **Tempo**: A high-scale distributed tracing backend
+## Dashboards
 
-This template is perfect for teams who need a comprehensive observability solution for their railway project without the hassle of manual configuration and infrastructure management.
+### Service Status
+Health and system metrics for both services:
+- Service uptimes
+- Circuit breaker status
+- Memory usage (heap & RSS)
+- API call success/error rates
+- Error totals and consecutive failures
+- Last activity timestamps
 
-### Key Features
+### Flashes Processing
+Flash processing pipeline metrics:
+- New flashes discovered (Producer)
+- Flashes processed (Consumer)
+- IPFS uploads
+- Processing rates per minute
+- Sync skip reasons
+- Duration histograms (p50/p90/p99)
+- Queue depth
+- Farcaster cast metrics
 
-- **Pre-configured Integration**: _All services come pre-connected_, so Grafana is ready to query your data immediately.
-- **Persistent Storage**: All four services use Railway volumes to ensure your data, dashboards, and configurations persist between updates and deploys.
-- **Version Control**: Pin specific Docker image versions for each service using environment variables.
-- **Customizable**: Fork the repository to customize configuration files for any service. You can take full control and edit anything you'd need to as you scale.
-- **One-Click Deploy**: Get a complete Grafana-based observability stack running in minutes.
+## Deployment
 
-## Quick Start Guide
+### Railway
 
-1. Click the "Deploy on Railway" button at the top of this page
-2. Enter your desired Grafana admin username in the `GF_SECURITY_ADMIN_USER` variable
-3. Leave all other variables at their defaults (or customize as needed)
-4. Wait for your stack to deploy (this typically takes 3-5 minutes)
-5. Navigate to the Grafana URL provided by Railway
-6. Log in with your admin username and the auto-generated password found in the `GF_SECURITY_ADMIN_PASSWORD` environment variable
-7. Hook up your applications to the datasources.
-8. Create dashboards, alerts, and explore your data in Grafana!
-
-## Optional Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `GF_SECURITY_ADMIN_USER` | Username for the Grafana admin account | Required input |
-| `GF_SECURITY_ADMIN_PASSWORD` | Password for the Grafana admin account | Auto-generated secure string |
-| `GF_DEFAULT_INSTANCE_NAME` | Name of your Grafana instance | `Grafana on Railway` |
-| `GF_INSTALL_PLUGINS` | Comma-separated list of Grafana plugins to install | `grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel` |
-
-### Internal Service URLs
-
-The Grafana service exposes these environment variables that you can reference in your other Railway applications to easily send data to your observability stack:
-
-| Variable | Description | Usage |
-|----------|-------------|-------|
-| `LOKI_INTERNAL_URL` | Internal URL for the Loki service | Use in your applications to send logs to and query Loki |
-| `PROMETHEUS_INTERNAL_URL` | Internal URL for the Prometheus service | Use in your applications to send metrics to and query Prometheus |
-| `TEMPO_INTERNAL_URL` | Internal URL for the Tempo service | Use in your applications to query Tempo |
-
-These variables make it easy to configure your other Railway services to send telemetry data to your observability stack.
-
-Tempo also exposes a few variables to make it easier to push tracing information to the service using either HTTP or GRPC
-
-| Variable | Description | Usage |
-|----------|-------------|-------|
-| `INTERNAL_HTTP_INGEST` | Internal HTTP ingest server URL for Tempo | Use in your applications to send traces to tempo via HTTP |
-| `INTERNAL_GRPC_INGEST` | Internal GRPC ingest server URL for Tempo | Use in your applications to send traces to tempo via GRPC |
-
-### Version Control
-
-Each service has its own `VERSION` environment variable that can be set independently in each service's settings in the Railway dashboard:
-
-- **Grafana Service**: Set `VERSION` to control the Grafana Docker image tag
-- **Loki Service**: Set `VERSION` to control the Loki Docker image tag
-- **Prometheus Service**: Set `VERSION` to control the Prometheus Docker image tag
-- **Tempo Service**: Set `VERSION` to control the Tempo Docker image tag
-
-By default, all services use the `latest` tag, but you can pin specific versions for stability:
-
-Examples:
-- Grafana: `VERSION=11.5.2`
-- Loki: `VERSION=3.4.2`
-- Prometheus: `VERSION=v3.2.1`
-- Tempo: `VERSION=2.9.0`
-
-This allows you to update each component independently as needed.
-
-> **⚠️ Note on Tempo v2.10.0**: There is a known issue with Tempo v2.10.0 where the `compactor` configuration block is not recognized, causing startup failures. This template is pinned to v2.9.0 until this issue is resolved in a future release.
-
-## Project Structure & Services
-
-This template deploys four interconnected services:
-
-### Grafana
-- The central visualization and dashboarding platform
-- Pre-configured with connections to all other services
-- Persistent volume for storing dashboards, users, and configurations
-- Comes with useful plugins pre-installed
-- Exposes internal URLs for other Railway services to connect to Loki, Prometheus, and Tempo
-
-### Prometheus
-- Time-series database for metrics collection
-- Configured with sensible defaults for monitoring
-- Persistent volume for metrics data
-
-### Loki
-- Log aggregation system designed to be cost-effective
-- Horizontally scalable architecture
-- Persistent volume for log storage
-
-### Tempo
-- Distributed tracing system for tracking requests across services
-- High-performance trace storage
-- Persistent volume for trace data
-
-All services are deployed using official Docker images and configured to work together seamlessly.
-
-## Connecting Your Applications
-
-### Using [Locomotive](https://railway.com/template/jP9r-f) for Loki
-
-You can easily ingest *all* of your railway logs into Loki from *any* service using [Locomotive](https://railway.com/template/jP9r-f). Just spin up their template, drop in your Railway API key, the ID of the services you want to monitor, and a link to your new Loki instance and logs will start flowing! no code changes needed anywhere!
-
-### Using OpenTelemetry libraries for Tempo 
-
-Tempo is a bit different than both Prometheus and Loki in that exposes separate GRPC and HTTP servers on ports `:4317` and `:4318` respectively specifically for ingesting your tracing data or "spans".
-
-When configuring your application to send traces to Tempo, please use one of the preconfigured variables in the Tempo service: `INTERNAL_HTTP_INGEST` or `INTERNAL_GRPC_INGEST`.
-
-Another thing to note is that the ingest API endpoint for the HTTP server is `/v1/traces`. For a working example of this in a node.js express API, see `/examples/api/tracer.js` in our GitHub repository.
-
-### Using otherwise standard observability tooling
-
-To send data from your other Railway applications to this observability stack:
-
-1. In your application's Railway service, add environment variables that reference the internal URLs:
+1. Deploy this repo on Railway
+2. Set environment variables for Prometheus:
    ```
-   LOKI_URL=${{Grafana.LOKI_INTERNAL_URL}}
-   PROMETHEUS_URL=${{Grafana.PROMETHEUS_INTERNAL_URL}}
-   TEMPO_URL=${{Grafana.TEMPO_INTERNAL_URL}}
+   INVADERS_BOT_TARGET=producer.railway.internal:9090
+   INVADERS_CONSUMER_TARGET=consumer.flashcastr.app
    ```
-2. Configure your application's logging, metrics, or tracing libraries to use these URLs
-3. Your application data will automatically appear in your Grafana dashboards
+3. Dashboards are automatically provisioned in Grafana
 
-## Customizing Your Stack
+### Local Development
 
-To customize the configuration of Loki, Prometheus, or Tempo:
+```bash
+docker-compose up -d
 
-1. Fork the [GitHub repository](https://github.com/yourusername/grafana-railway-template)
-2. Modify the configuration files in their respective directories
-3. In Railway, disconnect the service you want to customize
-4. Reconnect the service to your forked repository
-5. Deploy the updated service
+# Prometheus: http://localhost:9090
+# Grafana: http://localhost:3000 (admin/admin)
+```
 
-The pre-configured Grafana connections will continue to work with your customized services.
+## Project Structure
 
-## Additional Resources
+```
+├── prometheus/
+│   ├── prom.yml          # Scrape configuration
+│   └── dockerfile        # Custom image with env var substitution
+├── grafana/
+│   ├── dashboards/
+│   │   ├── service-status.json
+│   │   └── flashes.json
+│   ├── provisioning/
+│   │   ├── dashboards/
+│   │   └── datasources/
+│   └── dockerfile
+└── docker-compose.yml
+```
 
-- [Locomotive: a loki transport for railway services](https://railway.com/template/jP9r-f)
-- [Grafana Documentation](https://grafana.com/docs/grafana/latest/)
-- [Loki Documentation](https://grafana.com/docs/loki/latest/)
-- [Prometheus Documentation](https://prometheus.io/docs/introduction/overview/)
-- [Tempo Documentation](https://grafana.com/docs/tempo/latest/)
-- [Grafana Community Forums](https://community.grafana.com/)
-- [Grafana Plugins Directory](https://grafana.com/grafana/plugins/)
+## Metrics Reference
+
+### Producer Metrics (Port 9090)
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `invaders_bot_flashes_new_total` | Counter | New flashes stored in database |
+| `invaders_bot_api_calls_total{result}` | Counter | API calls (success/error) |
+| `invaders_bot_sync_skipped_total{reason}` | Counter | Skipped syncs (no_changes/backoff/off_peak_hours) |
+| `invaders_bot_consecutive_unchanged_syncs` | Gauge | Consecutive syncs with no changes |
+| `invaders_bot_last_flash_count` | Gauge | Total flash count from API |
+| `invaders_bot_sync_duration_seconds` | Histogram | Sync operation duration |
+| `invaders_bot_messages_published_total` | Counter | RabbitMQ messages published |
+| `invaders_bot_casts_published_total` | Counter | Farcaster casts published |
+| `invaders_bot_uptime_seconds` | Gauge | Service uptime |
+| `invaders_bot_memory_bytes{type}` | Gauge | Memory usage |
+
+### Consumer Metrics (Port 9091)
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `invaders_consumer_flashes_processed_total` | Counter | Flashes successfully processed |
+| `invaders_consumer_flashes_failed_total` | Counter | Failed flash processing |
+| `invaders_consumer_ipfs_uploads_total` | Counter | Successful IPFS uploads |
+| `invaders_consumer_ipfs_failures_total` | Counter | Failed IPFS uploads |
+| `invaders_consumer_processing_duration_seconds` | Histogram | Processing duration |
+| `invaders_consumer_queue_depth` | Gauge | RabbitMQ queue depth |
+| `invaders_consumer_circuit_breaker_state` | Gauge | Circuit breaker (0=closed, 1=open) |
+| `invaders_consumer_consecutive_failures` | Gauge | Consecutive failures |
+| `invaders_consumer_uptime_seconds` | Gauge | Service uptime |
+| `invaders_consumer_memory_bytes{type}` | Gauge | Memory usage |
+
+## Customization
+
+### Adding Panels
+
+1. Edit the dashboard JSON in `grafana/dashboards/`
+2. Use `grafana_prometheus` as the datasource UID
+3. Commit and redeploy
+
+### Changing Scrape Targets
+
+Update the environment variables in Railway:
+- `INVADERS_BOT_TARGET` - Producer metrics URL
+- `INVADERS_CONSUMER_TARGET` - Consumer metrics URL
 
 ---
 
-Developed and maintained by [Mykal](https://mykal.codes). For issues or suggestions, please open an issue on the [GitHub repository](https://github.com/MykalMachon/grafana-stack-railway).
+Based on the [Grafana Stack Railway Template](https://railway.com/template/8TLSQD)
