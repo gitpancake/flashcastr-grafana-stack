@@ -8,9 +8,8 @@ scrape_configs:
       - targets: ["localhost:9090"]
 
   - job_name: "invaders-bot"
-    scheme: https
     static_configs:
-      - targets: ["invadersbot-production.up.railway.app"]
+      - targets: ["producer.railway.internal:9090"]
     metrics_path: /metrics
 
   - job_name: "invaders-consumer"
