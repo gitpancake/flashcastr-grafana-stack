@@ -86,11 +86,11 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "invaders_bot_flashes_synced_total",
+          "expr": "invaders_bot_flashes_new_total",
           "refId": "A"
         }
       ],
-      "title": "Total Flashes Synced",
+      "title": "New Flashes (Producer)",
       "type": "stat"
     },
     {
@@ -149,7 +149,7 @@
           "refId": "A"
         }
       ],
-      "title": "Total Flashes Processed",
+      "title": "Flashes Processed (Consumer)",
       "type": "stat"
     },
     {
@@ -228,14 +228,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "red",
-                "value": 100
               }
             ]
           },
@@ -288,7 +280,7 @@
       },
       "id": 6,
       "panels": [],
-      "title": "Processing Rates",
+      "title": "API & Sync Activity",
       "type": "row"
     },
     {
@@ -371,8 +363,8 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "rate(invaders_bot_flashes_synced_total[5m])*60",
-          "legendFormat": "Synced (producer)",
+          "expr": "rate(invaders_bot_api_calls_total{result=\"success\"}[5m]) * 60",
+          "legendFormat": "Success",
           "refId": "A"
         },
         {
@@ -380,12 +372,12 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "rate(invaders_consumer_flashes_processed_total[5m])*60",
-          "legendFormat": "Processed (consumer)",
+          "expr": "rate(invaders_bot_api_calls_total{result=\"error\"}[5m]) * 60",
+          "legendFormat": "Error",
           "refId": "B"
         }
       ],
-      "title": "Flash Processing Rate (per minute)",
+      "title": "API Calls per Minute",
       "type": "timeseries"
     },
     {
@@ -438,7 +430,7 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "short"
         },
         "overrides": []
       },
@@ -468,8 +460,8 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(invaders_bot_sync_duration_seconds_bucket[5m]))",
-          "legendFormat": "Sync Duration p95 (producer)",
+          "expr": "rate(invaders_bot_sync_skipped_total{reason=\"no_changes\"}[5m]) * 60",
+          "legendFormat": "No Changes",
           "refId": "A"
         },
         {
@@ -477,12 +469,336 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "histogram_quantile(0.95, rate(invaders_consumer_processing_duration_seconds_bucket[5m]))",
-          "legendFormat": "Processing Duration p95 (consumer)",
+          "expr": "rate(invaders_bot_sync_skipped_total{reason=\"backoff\"}[5m]) * 60",
+          "legendFormat": "Backoff",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "rate(invaders_bot_sync_skipped_total{reason=\"off_peak_hours\"}[5m]) * 60",
+          "legendFormat": "Off-Peak",
+          "refId": "C"
         }
       ],
-      "title": "Processing Duration p95",
+      "title": "Sync Skips per Minute",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 14
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_bot_consecutive_unchanged_syncs",
+          "refId": "A"
+        }
+      ],
+      "title": "Consecutive Unchanged Syncs",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 14
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_bot_last_flash_count",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Flash Count (API)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 11,
+      "panels": [],
+      "title": "Processing Rates",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "rate(invaders_bot_flashes_new_total[5m]) * 60",
+          "legendFormat": "New Flashes",
+          "refId": "A"
+        }
+      ],
+      "title": "New Flashes per Minute (Producer)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "rate(invaders_consumer_flashes_processed_total[5m]) * 60",
+          "legendFormat": "Processed",
+          "refId": "A"
+        }
+      ],
+      "title": "Flashes Processed per Minute (Consumer)",
       "type": "timeseries"
     },
     {
@@ -491,9 +807,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 27
       },
-      "id": 9,
+      "id": 14,
       "panels": [],
       "title": "Errors & Health",
       "type": "row"
@@ -528,11 +844,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 6,
         "x": 0,
-        "y": 15
+        "y": 28
       },
-      "id": 10,
+      "id": 15,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -558,7 +874,7 @@
           "refId": "A"
         }
       ],
-      "title": "Failed Flashes",
+      "title": "Failed Flashes (Consumer)",
       "type": "stat"
     },
     {
@@ -591,11 +907,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 15
+        "w": 6,
+        "x": 6,
+        "y": 28
       },
-      "id": 11,
+      "id": 16,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -617,11 +933,11 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "invaders_bot_api_errors_total",
+          "expr": "invaders_bot_api_calls_total{result=\"error\"}",
           "refId": "A"
         }
       ],
-      "title": "API Errors",
+      "title": "API Errors (Producer)",
       "type": "stat"
     },
     {
@@ -654,11 +970,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 15
+        "w": 6,
+        "x": 12,
+        "y": 28
       },
-      "id": 12,
+      "id": 17,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -697,23 +1013,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "CLOSED"
-                },
-                "1": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "OPEN"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -733,14 +1033,14 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 12,
-        "y": 15
+        "w": 6,
+        "x": 18,
+        "y": 28
       },
-      "id": 13,
+      "id": 18,
       "options": {
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
@@ -759,7 +1059,7 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "invaders_consumer_circuit_breaker_open",
+          "expr": "invaders_consumer_circuit_breaker_state",
           "refId": "A"
         }
       ],
@@ -800,11 +1100,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 16,
-        "y": 15
+        "w": 6,
+        "x": 0,
+        "y": 32
       },
-      "id": 14,
+      "id": 19,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -826,11 +1126,83 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "max(invaders_consumer_consecutive_failures)",
+          "expr": "invaders_consumer_consecutive_failures",
           "refId": "A"
         }
       ],
-      "title": "Consecutive Failures",
+      "title": "Consecutive Failures (Consumer)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 20,
+      "panels": [],
+      "title": "RabbitMQ & Farcaster",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 37
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_bot_messages_published_total",
+          "refId": "A"
+        }
+      ],
+      "title": "Messages Published",
       "type": "stat"
     },
     {
@@ -863,11 +1235,11 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 20,
-        "y": 15
+        "w": 6,
+        "x": 6,
+        "y": 37
       },
-      "id": 15,
+      "id": 22,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -893,246 +1265,8 @@
           "refId": "A"
         }
       ],
-      "title": "RabbitMQ Failures",
+      "title": "Messages Failed",
       "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "id": 16,
-      "panels": [],
-      "title": "System Resources",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafana_prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 20
-      },
-      "id": 17,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "nodejs_heap_size_used_bytes{job=\"invaders-bot\"}",
-          "legendFormat": "Heap Used (producer)",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "process_resident_memory_bytes{job=\"invaders-bot\"}",
-          "legendFormat": "RSS (producer)",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "nodejs_heap_size_used_bytes{job=\"invaders-consumer\"}",
-          "legendFormat": "Heap Used (consumer)",
-          "refId": "C"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "process_resident_memory_bytes{job=\"invaders-consumer\"}",
-          "legendFormat": "RSS (consumer)",
-          "refId": "D"
-        }
-      ],
-      "title": "Memory Usage",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafana_prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
-      "id": 18,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "nodejs_eventloop_lag_seconds{job=\"invaders-bot\"}",
-          "legendFormat": "Event Loop Lag (producer)",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "nodejs_eventloop_lag_seconds{job=\"invaders-consumer\"}",
-          "legendFormat": "Event Loop Lag (consumer)",
-          "refId": "B"
-        }
-      ],
-      "title": "Event Loop Lag",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 28
-      },
-      "id": 19,
-      "panels": [],
-      "title": "Farcaster & RabbitMQ",
-      "type": "row"
     },
     {
       "datasource": {
@@ -1161,10 +1295,10 @@
       "gridPos": {
         "h": 4,
         "w": 6,
-        "x": 0,
-        "y": 29
+        "x": 12,
+        "y": 37
       },
-      "id": 20,
+      "id": 23,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1224,10 +1358,10 @@
       "gridPos": {
         "h": 4,
         "w": 6,
-        "x": 6,
-        "y": 29
+        "x": 18,
+        "y": 37
       },
-      "id": 21,
+      "id": 24,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1257,134 +1391,16 @@
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafana_prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 29
-      },
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "invaders_bot_messages_published_total",
-          "refId": "A"
-        }
-      ],
-      "title": "Messages Published",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "grafana_prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 29
-      },
-      "id": 23,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "grafana_prometheus"
-          },
-          "expr": "invaders_bot_api_requests_total",
-          "refId": "A"
-        }
-      ],
-      "title": "API Requests",
-      "type": "stat"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 41
       },
-      "id": 24,
+      "id": 25,
       "panels": [],
-      "title": "Uptime & Timestamps",
+      "title": "System Resources",
       "type": "row"
     },
     {
@@ -1395,7 +1411,37 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -1407,30 +1453,28 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
+        "h": 8,
+        "w": 12,
         "x": 0,
-        "y": 34
+        "y": 42
       },
-      "id": 25,
+      "id": 26,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -1439,12 +1483,22 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "invaders_bot_uptime_seconds",
+          "expr": "invaders_bot_memory_bytes{type=\"heap_used\"}",
+          "legendFormat": "Producer Heap",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_consumer_memory_bytes{type=\"heap_used\"}",
+          "legendFormat": "Consumer Heap",
+          "refId": "B"
         }
       ],
-      "title": "Producer Uptime",
-      "type": "stat"
+      "title": "Memory Usage",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1454,7 +1508,37 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -1466,30 +1550,28 @@
               }
             ]
           },
-          "unit": "s"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 34
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
       },
-      "id": 26,
+      "id": 27,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "10.0.0",
       "targets": [
@@ -1498,12 +1580,35 @@
             "type": "prometheus",
             "uid": "grafana_prometheus"
           },
-          "expr": "invaders_consumer_uptime_seconds",
+          "expr": "invaders_bot_uptime_seconds",
+          "legendFormat": "Producer",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_consumer_uptime_seconds",
+          "legendFormat": "Consumer",
+          "refId": "B"
         }
       ],
-      "title": "Consumer Uptime",
-      "type": "stat"
+      "title": "Uptime",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 28,
+      "panels": [],
+      "title": "Timestamps",
+      "type": "row"
     },
     {
       "datasource": {
@@ -1532,10 +1637,10 @@
       "gridPos": {
         "h": 4,
         "w": 6,
-        "x": 12,
-        "y": 34
+        "x": 0,
+        "y": 51
       },
-      "id": 27,
+      "id": 29,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -1561,7 +1666,7 @@
           "refId": "A"
         }
       ],
-      "title": "Last Sync",
+      "title": "Last Sync (Producer)",
       "type": "stat"
     },
     {
@@ -1591,10 +1696,69 @@
       "gridPos": {
         "h": 4,
         "w": 6,
-        "x": 18,
-        "y": 34
+        "x": 6,
+        "y": 51
       },
-      "id": 28,
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "grafana_prometheus"
+          },
+          "expr": "invaders_bot_last_api_call_timestamp * 1000",
+          "refId": "A"
+        }
+      ],
+      "title": "Last API Call (Producer)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "grafana_prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeFromNow"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 51
+      },
+      "id": 31,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -1620,17 +1784,15 @@
           "refId": "A"
         }
       ],
-      "title": "Last Processed",
+      "title": "Last Processed (Consumer)",
       "type": "stat"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [
     "flashcastr",
-    "invaders",
-    "monitoring"
+    "invaders"
   ],
   "templating": {
     "list": []
