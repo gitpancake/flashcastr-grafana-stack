@@ -1,6 +1,6 @@
 # Flashcastr Grafana Stack
 
-Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus and Grafana on Railway to monitor all three services.
+Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus, Tempo, and Grafana on Railway for metrics, distributed tracing, and dashboards.
 
 ## Services Monitored
 
@@ -34,6 +34,15 @@ Flash processing pipeline metrics:
 - Queue depth
 - Farcaster cast metrics
 
+### Distributed Tracing (Tempo)
+The Service Status dashboard includes trace-derived RED metrics:
+- Request rate by service (from traces)
+- Error rate by service (from traces)
+- Request duration percentiles (p50/p90/p99)
+- Service-to-service call graphs
+
+Tempo receives traces via OpenTelemetry (OTLP) from the Producer and API services.
+
 ## Deployment
 
 ### Railway
@@ -61,15 +70,20 @@ docker-compose up -d
 ```
 ├── prometheus/
 │   ├── prom.yml          # Scrape configuration
-│   └── dockerfile        # Custom image with env var substitution
+│   └── dockerfile        # Custom image with env var substitution & remote write
+├── tempo/
+│   ├── tempo.yml         # Tempo config with metrics generator
+│   └── dockerfile        # Tempo image
 ├── grafana/
 │   ├── dashboards/
-│   │   ├── service-status.json
-│   │   └── flashes.json
+│   │   ├── service-status.json   # Health, memory, API metrics, tracing
+│   │   └── flashes.json          # Flash processing pipeline
 │   ├── provisioning/
 │   │   ├── dashboards/
 │   │   └── datasources/
+│   ├── grafana.ini       # Default home dashboard config
 │   └── dockerfile
+├── loki/                 # Log aggregation (optional)
 └── docker-compose.yml
 ```
 
@@ -122,6 +136,38 @@ docker-compose up -d
 | `flashcastr_api_total_flashes` | Gauge | Total flashes |
 | `flashcastr_api_uptime_seconds` | Gauge | Service uptime |
 | `flashcastr_api_memory_bytes{type}` | Gauge | Memory usage |
+
+## Distributed Tracing with Tempo
+
+Tempo collects distributed traces from services via OpenTelemetry Protocol (OTLP).
+
+### How It Works
+
+1. **Services send traces**: Producer and API services use OpenTelemetry SDK to send traces to Tempo
+2. **Tempo generates metrics**: The metrics generator creates RED metrics from traces
+3. **Prometheus scrapes metrics**: Tempo pushes metrics to Prometheus via remote write
+4. **Grafana visualizes**: Dashboard panels show trace-derived metrics
+
+### Trace Metrics Generated
+
+| Metric | Description |
+|--------|-------------|
+| `traces_spanmetrics_calls_total` | Request count by service |
+| `traces_spanmetrics_latency_bucket` | Request duration histogram |
+| `traces_service_graph_request_total` | Service-to-service call counts |
+
+### Configuring Services
+
+Set the `TEMPO_HTTP_ENDPOINT` environment variable on each service:
+
+```
+TEMPO_HTTP_ENDPOINT=http://tempo.railway.internal:4318/v1/traces
+```
+
+Currently configured services:
+- **invaders.bot** (Producer) - sends traces
+- **flashcastr.api** (API) - sends traces
+- **invaders.consumer** (Consumer) - does not send traces (runs on DigitalOcean)
 
 ## Customization
 

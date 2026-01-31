@@ -12,17 +12,30 @@ Flashcastr Grafana Stack is a monitoring and observability solution for the Flas
 ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐
 │   invaders.bot      │  │  invaders.consumer  │  │   flashcastr.api    │
 │   (Producer)        │  │     (Consumer)      │  │      (API)          │
-│   Port 9090         │  │     Port 9091       │  │     Port 9092       │
+│   Metrics: 9090     │  │   Metrics: 9091     │  │   Metrics: 9092     │
+│   Traces: OTLP      │  │   (No tracing)      │  │   Traces: OTLP      │
 └──────────┬──────────┘  └──────────┬──────────┘  └──────────┬──────────┘
            │                        │                        │
+           │ metrics                │ metrics                │ metrics
            └────────────────────────┼────────────────────────┘
                                     ▼
                            ┌─────────────────┐
-                           │   Prometheus    │
-                           │   (Scraper)     │
-                           └────────┬────────┘
-                                    ▼
-                           ┌─────────────────┐
+                           │   Prometheus    │◄──── remote write
+                           │   (Metrics)     │         │
+                           └────────┬────────┘         │
+                                    │                  │
+           ┌────────────────────────┼──────────────────┼─────────┐
+           │                        │                  │         │
+           │ traces (OTLP)          │                  │         │
+           │                        ▼                  │         │
+           │               ┌─────────────────┐         │         │
+           └──────────────►│     Tempo       │─────────┘         │
+                           │  (Traces +      │                   │
+                           │   Metrics Gen)  │                   │
+                           └────────┬────────┘                   │
+                                    │                            │
+                                    ▼                            │
+                           ┌─────────────────┐◄──────────────────┘
                            │    Grafana      │
                            │  (Dashboards)   │
                            └─────────────────┘
@@ -34,18 +47,25 @@ Flashcastr Grafana Stack is a monitoring and observability solution for the Flas
 flashcastr-grafana-stack/
 ├── prometheus/
 │   ├── prom.yml              # Prometheus config with scrape targets
-│   └── dockerfile            # Custom Prometheus image with env var substitution
+│   └── dockerfile            # Custom image with env var substitution & remote write receiver
+├── tempo/
+│   ├── tempo.yml             # Tempo config with metrics generator for RED metrics
+│   └── dockerfile            # Tempo image
 ├── grafana/
 │   ├── dashboards/
-│   │   ├── service-status.json   # Service health, uptime, memory, API metrics
-│   │   └── flashes.json          # Flash processing metrics
+│   │   ├── service-status.json   # Health, memory, API metrics, distributed tracing
+│   │   └── flashes.json          # Flash processing pipeline metrics
+│   ├── datasources/
+│   │   └── datasources.yml       # Prometheus, Tempo, Loki datasources
 │   ├── provisioning/
-│   │   ├── dashboards/
-│   │   │   └── dashboards.yml    # Dashboard provisioning config
-│   │   └── datasources/
-│   │       └── datasources.yml   # Prometheus datasource config
-│   └── dockerfile            # Custom Grafana image with dashboards
-└── docker-compose.yml        # Local development setup
+│   │   └── dashboards/
+│   │       └── dashboards.yml    # Dashboard provisioning config
+│   ├── grafana.ini               # Default home dashboard config
+│   └── dockerfile                # Custom Grafana image with dashboards
+├── loki/                         # Log aggregation (optional)
+│   ├── loki.yml
+│   └── dockerfile
+└── docker-compose.yml            # Local development setup
 ```
 
 ## Dashboards
@@ -62,6 +82,11 @@ flashcastr-grafana-stack/
 - Cache performance (hits/misses)
 - Neynar API call rates
 - Error totals
+- **Distributed Tracing (Tempo)**:
+  - Request rate by service (from traces)
+  - Error rate by service (from traces)
+  - Request duration percentiles (p50/p90/p99)
+  - Service-to-service call graphs
 
 ### Flashes Processing Dashboard
 - New flashes count (Producer)
@@ -82,6 +107,17 @@ The Prometheus dockerfile uses sed-based substitution for these variables:
 - `INVADERS_BOT_TARGET` - Producer metrics endpoint (e.g., `producer.railway.internal:9090`)
 - `INVADERS_CONSUMER_TARGET` - Consumer metrics endpoint (e.g., `consumer.flashcastr.app`)
 - `FLASHCASTR_API_TARGET` - API metrics endpoint (e.g., `api.flashcastr.app`)
+
+### Tempo Environment Variables (on services)
+
+Services that send traces need:
+
+- `TEMPO_HTTP_ENDPOINT` - Tempo OTLP endpoint (e.g., `http://tempo.railway.internal:4318/v1/traces`)
+
+Currently tracing-enabled:
+- **invaders.bot** (Producer) - Yes
+- **flashcastr.api** (API) - Yes
+- **invaders.consumer** (Consumer) - No (runs on DigitalOcean, can't reach Railway internal)
 
 ## Deployment on Railway
 
@@ -141,6 +177,11 @@ docker-compose up -d
 - `flashcastr_api_total_flashes` - Total flashes (gauge)
 - `flashcastr_api_uptime_seconds` - Service uptime
 - `flashcastr_api_memory_bytes{type}` - Memory usage
+
+### Tempo-Generated Metrics (from traces)
+- `traces_spanmetrics_calls_total{service, status_code}` - Request count by service
+- `traces_spanmetrics_latency_bucket{service, le}` - Request duration histogram
+- `traces_service_graph_request_total{client, server}` - Service-to-service calls
 
 ## Adding New Panels
 
