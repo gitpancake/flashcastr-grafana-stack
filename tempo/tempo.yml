@@ -13,7 +13,7 @@ storage:
 
 distributor:
   log_received_spans:
-        enabled: true
+    enabled: true
   receivers:
     otlp:
       protocols:
@@ -21,3 +21,32 @@ distributor:
           endpoint: "0.0.0.0:4317"
         http:
           endpoint: "0.0.0.0:4318"
+
+# Generate metrics from traces (RED metrics)
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+  processor:
+    service_graphs:
+      enabled: true
+      dimensions:
+        - service.name
+    span_metrics:
+      enabled: true
+      dimensions:
+        - service.name
+        - http.method
+        - http.status_code
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [service-graphs, span-metrics]
