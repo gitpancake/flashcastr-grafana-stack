@@ -10,10 +10,8 @@ RUN apk add --no-cache gettext
 # Copy the template config
 COPY prom.yml /etc/prometheus/prom.yml.template
 
-# Create entrypoint script that substitutes env vars and starts prometheus
-RUN echo '#!/bin/sh
-envsubst < /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml
-exec /bin/prometheus "$@"' > /entrypoint.sh && chmod +x /entrypoint.sh
+# Create entrypoint script
+RUN printf '#!/bin/sh\\nenvsubst < /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\\nexec /bin/prometheus "$@"\\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--config.file=/etc/prometheus/prom.yml", "--storage.tsdb.path=/prometheus"]
