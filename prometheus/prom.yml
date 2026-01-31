@@ -9,11 +9,11 @@ scrape_configs:
 
   - job_name: "invaders-bot"
     static_configs:
-      - targets: ["producer.railway.internal:9090"]
+      - targets: ["${INVADERS_BOT_TARGET}"]
     metrics_path: /metrics
 
   - job_name: "invaders-consumer"
     scheme: https
     static_configs:
-      - targets: ["consumer.flashcastr.app"]
+      - targets: ["${INVADERS_CONSUMER_TARGET}"]
     metrics_path: /metrics
