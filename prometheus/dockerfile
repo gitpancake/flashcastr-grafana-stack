@@ -4,14 +4,11 @@ FROM prom/prometheus:${VERSION}
 
 USER root
 
-# Install envsubst (part of gettext)
-RUN apk add --no-cache gettext
-
 # Copy the template config
 COPY prom.yml /etc/prometheus/prom.yml.template
 
-# Create entrypoint script
-RUN printf '#!/bin/sh\\nenvsubst < /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\\nexec /bin/prometheus "$@"\\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+# Create entrypoint script using sed for variable substitution
+RUN printf '#!/bin/sh\nset -e\nsed -e "s|\${INVADERS_BOT_TARGET}|${INVADERS_BOT_TARGET}|g" -e "s|\${INVADERS_CONSUMER_TARGET}|${INVADERS_CONSUMER_TARGET}|g" /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\nexec /bin/prometheus "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--config.file=/etc/prometheus/prom.yml", "--storage.tsdb.path=/prometheus"]
