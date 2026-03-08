@@ -7,14 +7,15 @@ USER root
 # Copy the template config
 COPY prom.yml /etc/prometheus/prom.yml.template
 
-# Create entrypoint script using sed for variable substitution
-RUN printf '#!/bin/sh\nset -e\nsed \
-  -e "s|\${FLASHCASTR_API_TARGET}|${FLASHCASTR_API_TARGET}|g" \
-  -e "s|\${FLASH_ENGINE_TARGET}|${FLASH_ENGINE_TARGET}|g" \
-  -e "s|\${DATABASE_ENGINE_TARGET}|${DATABASE_ENGINE_TARGET}|g" \
-  -e "s|\${IMAGE_ENGINE_TARGET}|${IMAGE_ENGINE_TARGET}|g" \
-  -e "s|\${NEYNAR_ENGINE_TARGET}|${NEYNAR_ENGINE_TARGET}|g" \
-  /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\nexec /bin/prometheus "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+# Create entrypoint script that substitutes env vars at runtime
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'set -e' >> /entrypoint.sh && \
+    echo 'envsubst < /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml' >> /entrypoint.sh && \
+    echo 'exec /bin/prometheus "$@"' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+# Install envsubst (from gettext package)
+RUN apk add --no-cache gettext
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--config.file=/etc/prometheus/prom.yml", "--storage.tsdb.path=/prometheus", "--web.enable-remote-write-receiver"]
