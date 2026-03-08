@@ -41,7 +41,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "API",
       "type": "stat",
-      "targets": [{ "expr": "up{job=\"flashcastr-api\"}", "refId": "A" }]
+      "targets": [{ "expr": "max(up{job=\"flashcastr-api\"})", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -59,7 +59,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Flash Engine",
       "type": "stat",
-      "targets": [{ "expr": "up{job=\"flash-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "max(up{job=\"flash-engine\"})", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -77,7 +77,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Database Engine",
       "type": "stat",
-      "targets": [{ "expr": "up{job=\"database-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "max(up{job=\"database-engine\"})", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -95,7 +95,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Image Engine",
       "type": "stat",
-      "targets": [{ "expr": "up{job=\"image-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "max(up{job=\"image-engine\"})", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -113,7 +113,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Neynar Engine",
       "type": "stat",
-      "targets": [{ "expr": "up{job=\"neynar-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "max(up{job=\"neynar-engine\"})", "refId": "A" }]
     },
     {
       "collapsed": false,
