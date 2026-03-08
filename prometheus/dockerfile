@@ -4,7 +4,7 @@ USER root
 
 COPY prom.yml /etc/prometheus/prom.yml.template
 
-RUN printf '#!/bin/sh\nset -e\nsed -e "s|\${FLASHCASTR_API_TARGET}|${FLASHCASTR_API_TARGET}|g" -e "s|\${FLASH_ENGINE_TARGET}|${FLASH_ENGINE_TARGET}|g" -e "s|\${DATABASE_ENGINE_TARGET}|${DATABASE_ENGINE_TARGET}|g" -e "s|\${IMAGE_ENGINE_TARGET}|${IMAGE_ENGINE_TARGET}|g" -e "s|\${NEYNAR_ENGINE_TARGET}|${NEYNAR_ENGINE_TARGET}|g" /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\nexec /bin/prometheus "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+RUN printf '#!/bin/sh\nset -e\nrm -f /prometheus/lock\nsed -e "s|\${FLASHCASTR_API_TARGET}|${FLASHCASTR_API_TARGET}|g" -e "s|\${FLASH_ENGINE_TARGET}|${FLASH_ENGINE_TARGET}|g" -e "s|\${DATABASE_ENGINE_TARGET}|${DATABASE_ENGINE_TARGET}|g" -e "s|\${IMAGE_ENGINE_TARGET}|${IMAGE_ENGINE_TARGET}|g" -e "s|\${NEYNAR_ENGINE_TARGET}|${NEYNAR_ENGINE_TARGET}|g" /etc/prometheus/prom.yml.template > /etc/prometheus/prom.yml\nexec /bin/prometheus "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--config.file=/etc/prometheus/prom.yml", "--storage.tsdb.path=/prometheus", "--web.enable-remote-write-receiver"]
