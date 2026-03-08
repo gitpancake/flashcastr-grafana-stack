@@ -1,0 +1,90 @@
+{
+  "annotations": { "list": [{ "builtIn": 1, "datasource": { "type": "grafana", "uid": "-- Grafana --" }, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard" }] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [{ "asDropdown": false, "icon": "external link", "includeVars": true, "keepTime": true, "tags": ["flashcastr"], "targetBlank": false, "title": "Dashboards", "type": "dashboards" }],
+  "panels": [
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 100, "title": "Error Rate", "type": "row" },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "bars", "fillOpacity": 80, "lineWidth": 1, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "title": "Error & Warning Logs Over Time",
+      "type": "timeseries",
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "grafana_lokiq" }, "expr": "sum by (service) (count_over_time({service=~\"$service\", level=\"error\"} [$__auto]))", "legendFormat": "{{service}} errors", "refId": "A" },
+        { "datasource": { "type": "loki", "uid": "grafana_lokiq" }, "expr": "sum by (service) (count_over_time({service=~\"$service\", level=\"warn\"} [$__auto]))", "legendFormat": "{{service}} warnings", "refId": "B" }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 7 },
+      "id": 2,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "right" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "title": "Log Volume by Service",
+      "type": "timeseries",
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "grafana_lokiq" }, "expr": "sum by (service) (count_over_time({service=~\"$service\"} [$__auto]))", "legendFormat": "{{service}}", "refId": "A" }
+      ]
+    },
+    { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }, "id": 101, "title": "Log Stream", "type": "row" },
+    {
+      "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+      "gridPos": { "h": 18, "w": 24, "x": 0, "y": 14 },
+      "id": 10,
+      "options": { "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false, "showCommonLabels": false, "showLabels": true, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": true },
+      "title": "Logs",
+      "type": "logs",
+      "targets": [
+        { "datasource": { "type": "loki", "uid": "grafana_lokiq" }, "expr": "{service=~\"$service\", level=~\"$level\"}", "refId": "A" }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["flashcastr", "logs"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "grafana_lokiq" },
+        "definition": "label_values(service)",
+        "includeAll": true,
+        "multi": true,
+        "name": "service",
+        "options": [],
+        "query": "label_values(service)",
+        "refresh": 2,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "includeAll": true,
+        "multi": true,
+        "name": "level",
+        "options": [
+          { "selected": true, "text": "All", "value": "$__all" },
+          { "selected": false, "text": "info", "value": "info" },
+          { "selected": false, "text": "warn", "value": "warn" },
+          { "selected": false, "text": "error", "value": "error" },
+          { "selected": false, "text": "debug", "value": "debug" }
+        ],
+        "query": "info,warn,error,debug",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Logs",
+  "uid": "flashcastr-logs",
+  "version": 1
+}
