@@ -51,7 +51,7 @@
   "templating": {
     "list": [
       {
-        "allValue": ".*",
+        "allValue": ".+",
         "current": { "selected": true, "text": "All", "value": "$__all" },
         "datasource": { "type": "loki", "uid": "grafana_lokiq" },
         "definition": "label_values(service)",
@@ -64,7 +64,7 @@
         "type": "query"
       },
       {
-        "allValue": ".*",
+        "allValue": ".+",
         "current": { "selected": true, "text": "All", "value": "$__all" },
         "includeAll": true,
         "multi": true,
