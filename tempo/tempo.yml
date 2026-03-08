@@ -36,11 +36,9 @@ metrics_generator:
     path: /var/tempo/generator/traces
   processor:
     service_graphs:
-      enabled: true
       dimensions:
         - service.name
     span_metrics:
-      enabled: true
       dimensions:
         - service.name
         - http.method
