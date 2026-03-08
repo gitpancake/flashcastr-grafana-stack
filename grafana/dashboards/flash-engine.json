@@ -8,7 +8,7 @@
   "panels": [
     { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 100, "title": "Flash Ingestion", "type": "row" },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 4, "x": 0, "y": 1 },
       "id": 1,
@@ -18,7 +18,7 @@
       "targets": [{ "expr": "flash_engine_last_flash_count{job=\"flash-engine\"}", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 4, "x": 4, "y": 1 },
       "id": 2,
@@ -28,7 +28,7 @@
       "targets": [{ "expr": "flash_engine_flashes_published_total{job=\"flash-engine\"}", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "yellow", "value": null }] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 4, "x": 8, "y": 1 },
       "id": 3,
@@ -38,7 +38,7 @@
       "targets": [{ "expr": "flash_engine_paris_flashes_filtered_total{job=\"flash-engine\"}", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "ops" } },
       "gridPos": { "h": 6, "w": 12, "x": 12, "y": 1 },
       "id": 4,
@@ -49,7 +49,7 @@
     },
     { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 }, "id": 101, "title": "API Calls", "type": "row" },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "ops" } },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "id": 10,
@@ -62,7 +62,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.05 }] }, "unit": "percentunit", "min": 0, "max": 1 } },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "id": 11,
@@ -73,7 +73,7 @@
     },
     { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 }, "id": 102, "title": "Resources", "type": "row" },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "bytes" } },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 17 },
       "id": 20,
@@ -86,7 +86,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "s" } },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 17 },
       "id": 21,

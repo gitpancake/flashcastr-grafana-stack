@@ -8,7 +8,7 @@
   "panels": [
     { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 100, "title": "Flash Storage", "type": "row" },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
       "id": 1,
@@ -18,7 +18,7 @@
       "targets": [{ "expr": "database_engine_flashes_stored_total{job=\"database-engine\"}", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
       "id": 2,
@@ -28,7 +28,7 @@
       "targets": [{ "expr": "database_engine_flashes_failed_total{job=\"database-engine\"}", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "ops" } },
       "gridPos": { "h": 6, "w": 12, "x": 12, "y": 1 },
       "id": 3,
@@ -41,7 +41,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 0.01 }] }, "unit": "percentunit", "min": 0, "max": 1 } },
       "gridPos": { "h": 6, "w": 12, "x": 0, "y": 7 },
       "id": 4,
@@ -51,7 +51,7 @@
       "targets": [{ "expr": "rate(database_engine_flashes_failed_total{job=\"database-engine\"}[$__rate_interval]) / (rate(database_engine_flashes_stored_total{job=\"database-engine\"}[$__rate_interval]) + rate(database_engine_flashes_failed_total{job=\"database-engine\"}[$__rate_interval]))", "refId": "A" }]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 12, "x": 12, "y": 7 },
       "id": 5,
@@ -65,7 +65,7 @@
     },
     { "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }, "id": 101, "title": "Resources", "type": "row" },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "bytes" } },
       "gridPos": { "h": 7, "w": 12, "x": 0, "y": 14 },
       "id": 10,
@@ -78,7 +78,7 @@
       ]
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
       "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "drawStyle": "line", "fillOpacity": 15, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": false }, "unit": "s" } },
       "gridPos": { "h": 7, "w": 12, "x": 12, "y": 14 },
       "id": 11,
