@@ -7,18 +7,27 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: "invaders-bot"
-    static_configs:
-      - targets: ["${INVADERS_BOT_TARGET}"]
-    metrics_path: /metrics
-
-  - job_name: "invaders-consumer"
-    scheme: https
-    static_configs:
-      - targets: ["${INVADERS_CONSUMER_TARGET}"]
-    metrics_path: /metrics
-
   - job_name: "flashcastr-api"
     static_configs:
       - targets: ["${FLASHCASTR_API_TARGET}"]
+    metrics_path: /metrics
+
+  - job_name: "flash-engine"
+    static_configs:
+      - targets: ["${FLASH_ENGINE_TARGET}"]
+    metrics_path: /metrics
+
+  - job_name: "database-engine"
+    static_configs:
+      - targets: ["${DATABASE_ENGINE_TARGET}"]
+    metrics_path: /metrics
+
+  - job_name: "image-engine"
+    static_configs:
+      - targets: ["${IMAGE_ENGINE_TARGET}"]
+    metrics_path: /metrics
+
+  - job_name: "neynar-engine"
+    static_configs:
+      - targets: ["${NEYNAR_ENGINE_TARGET}"]
     metrics_path: /metrics

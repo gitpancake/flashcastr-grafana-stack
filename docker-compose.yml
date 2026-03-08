@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-    
+
   prometheus:
     build:
       context: ./prometheus
@@ -11,6 +11,12 @@ services:
       - "9090:9090"
     volumes:
       - prometheus_data:/prometheus
+    environment:
+      - FLASHCASTR_API_TARGET=${FLASHCASTR_API_TARGET}
+      - FLASH_ENGINE_TARGET=${FLASH_ENGINE_TARGET}
+      - DATABASE_ENGINE_TARGET=${DATABASE_ENGINE_TARGET}
+      - IMAGE_ENGINE_TARGET=${IMAGE_ENGINE_TARGET}
+      - NEYNAR_ENGINE_TARGET=${NEYNAR_ENGINE_TARGET}
 
   loki:
     build:
@@ -22,7 +28,7 @@ services:
     volumes:
       - loki_data:/loki
 
-  tempo: 
+  tempo:
     build:
       context: ./tempo
       dockerfile: dockerfile
@@ -50,18 +56,8 @@ services:
       - LOKI_INTERNAL_URL=http://loki:3100
       - PROMETHEUS_INTERNAL_URL=http://prometheus:9090
       - TEMPO_INTERNAL_URL=http://tempo:3200
-  
-  example_api: 
-    build:
-      context: ./examples/api
-      dockerfile: dockerfile
-    ports:
-      - "9091:9091"
-    environment:
-      - TEMPO_URL=http://tempo:4318
-      - TEMPO_SERVICE_NAME=example_api
 
-volumes: 
+volumes:
   prometheus_data:
   loki_data:
   grafana_data:
