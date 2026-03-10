@@ -1,58 +1,62 @@
 # Flashcastr Grafana Stack
 
-Monitoring and observability stack for the Flashcastr/Space Invaders services. Deploys Prometheus, Tempo, and Grafana on Railway for metrics, distributed tracing, and dashboards.
+Monitoring and observability stack for the Flashcastr microservices pipeline. Deploys Prometheus, Loki, Tempo, and Grafana for metrics, logs, distributed tracing, and dashboards.
 
 ## Services Monitored
 
 | Service | Description | Metrics Port |
 |---------|-------------|--------------|
-| **invaders.bot** (Producer) | Syncs flash data from Space Invaders API, publishes to RabbitMQ and Farcaster | 9090 |
-| **invaders.consumer** (Consumer) | Processes flashes, uploads images to IPFS, updates PostgreSQL | 9091 |
-| **flashcastr.api** (API) | GraphQL API for Flashcastr app, user management, leaderboards | 9092 |
+| **flash-engine** | Cron-fetches flashes from Space Invaders API | configurable |
+| **image-engine** | Downloads images, pins to IPFS via Pinata | configurable |
+| **database-engine** | Batch inserts flashes into Postgres | configurable |
+| **neynar-engine** | Casts to Farcaster via Neynar SDK | configurable |
+| **api** | GraphQL API for Flashcastr app | configurable |
 
 ## Dashboards
 
-### Service Status
-Health and system metrics for all services:
-- Service uptimes (Producer, Consumer, API)
-- Circuit breaker status
-- Memory usage (heap & RSS)
-- API call success/error rates
-- GraphQL request metrics and durations
-- Cache performance (hits/misses)
-- Neynar API call rates
-- Error totals
+7 auto-provisioned dashboards in `grafana/dashboards/`:
 
-### Flashes Processing
-Flash processing pipeline metrics:
-- New flashes discovered (Producer)
-- Flashes processed (Consumer)
-- IPFS uploads
-- Processing rates per minute
-- Sync skip reasons
-- Duration histograms (p50/p90/p99)
-- Queue depth
-- Farcaster cast metrics
+| Dashboard | File | Description |
+|-----------|------|-------------|
+| **Overview** | `overview.json` | Home dashboard — service health, memory, API metrics, distributed traces |
+| **API** | `api.json` | GraphQL request metrics, durations, cache performance |
+| **Flash Engine** | `flash-engine.json` | Flash fetching and publishing metrics |
+| **Image Engine** | `image-engine.json` | Image downloads, IPFS pinning, circuit breaker status |
+| **Database Engine** | `database-engine.json` | Batch insert metrics, pool stats |
+| **Neynar Engine** | `neynar-engine.json` | Farcaster casting metrics, retry stats |
+| **Logs** | `logs.json` | Loki log aggregation with service and level filters |
 
 ### Distributed Tracing (Tempo)
-The Service Status dashboard includes trace-derived RED metrics:
-- Request rate by service (from traces)
-- Error rate by service (from traces)
-- Request duration percentiles (p50/p90/p99)
-- Service-to-service call graphs
 
-Tempo receives traces via OpenTelemetry (OTLP) from the Producer and API services.
+Tempo collects distributed traces via OpenTelemetry (OTLP) and generates RED metrics:
+
+1. Services send traces via OpenTelemetry SDK to Tempo
+2. Tempo metrics generator creates RED metrics from traces
+3. Prometheus receives metrics via remote write
+4. Grafana visualizes trace-derived metrics in the Overview dashboard
+
+| Metric | Description |
+|--------|-------------|
+| `traces_spanmetrics_calls_total` | Request count by service |
+| `traces_spanmetrics_latency_bucket` | Request duration histogram |
+| `traces_service_graph_request_total` | Service-to-service call counts |
+
+### Log Aggregation (Loki)
+
+Services ship structured logs to Loki via the `@flashcastr/logger` library. The Logs dashboard provides filtering by service and log level.
 
 ## Deployment
 
 ### Railway
 
 1. Deploy this repo on Railway
-2. Set environment variables for Prometheus:
+2. Set environment variables for Prometheus scrape targets:
    ```
-   INVADERS_BOT_TARGET=producer.railway.internal:9090
-   INVADERS_CONSUMER_TARGET=consumer.flashcastr.app
-   FLASHCASTR_API_TARGET=api.flashcastr.app
+   FLASHCASTR_API_TARGET=api-host:port
+   FLASH_ENGINE_TARGET=flash-engine-host:port
+   DATABASE_ENGINE_TARGET=database-engine-host:port
+   IMAGE_ENGINE_TARGET=image-engine-host:port
+   NEYNAR_ENGINE_TARGET=neynar-engine-host:port
    ```
 3. Dashboards are automatically provisioned in Grafana
 
@@ -62,127 +66,76 @@ Tempo receives traces via OpenTelemetry (OTLP) from the Producer and API service
 docker-compose up -d
 
 # Prometheus: http://localhost:9090
-# Grafana: http://localhost:3000 (admin/admin)
+# Loki:       http://localhost:3100
+# Tempo:      http://localhost:3200
+# Grafana:    http://localhost:3000 (admin/admin)
 ```
 
 ## Project Structure
 
 ```
 ├── prometheus/
-│   ├── prom.yml          # Scrape configuration
+│   ├── prom.yml          # Scrape config (5 service targets via env vars)
 │   └── dockerfile        # Custom image with env var substitution & remote write
+├── loki/
+│   ├── loki.yml          # TSDB schema, filesystem storage
+│   └── dockerfile        # grafana/loki:3.4
 ├── tempo/
-│   ├── tempo.yml         # Tempo config with metrics generator
-│   └── dockerfile        # Tempo image
+│   ├── tempo.yml         # OTLP receivers, metrics generator → Prometheus remote write
+│   └── dockerfile        # grafana/tempo:2.9.0
 ├── grafana/
-│   ├── dashboards/
-│   │   ├── service-status.json   # Health, memory, API metrics, tracing
-│   │   └── flashes.json          # Flash processing pipeline
-│   ├── provisioning/
-│   │   ├── dashboards/
-│   │   └── datasources/
-│   ├── grafana.ini       # Default home dashboard config
-│   └── dockerfile
-├── loki/                 # Log aggregation (optional)
-└── docker-compose.yml
+│   ├── dashboards/       # 7 JSON dashboard files (auto-provisioned)
+│   ├── datasources/      # Prometheus, Loki, Tempo datasource configs
+│   ├── provisioning/     # Dashboard provisioning config
+│   ├── grafana.ini       # Sets overview.json as home dashboard
+│   └── dockerfile        # grafana/grafana-oss:11.5.2
+├── examples/
+│   └── api/              # Example Node.js service with metrics, tracing, and logging
+├── docker-compose.yml    # Full local stack (Prometheus, Loki, Tempo, Grafana)
+└── README.md
 ```
 
-## Metrics Reference
+## Environment Variables
 
-### Producer Metrics (Port 9090)
+### Prometheus Scrape Targets
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `invaders_bot_flashes_new_total` | Counter | New flashes stored in database |
-| `invaders_bot_api_calls_total{result}` | Counter | API calls (success/error) |
-| `invaders_bot_sync_skipped_total{reason}` | Counter | Skipped syncs (no_changes/backoff/off_peak_hours) |
-| `invaders_bot_consecutive_unchanged_syncs` | Gauge | Consecutive syncs with no changes |
-| `invaders_bot_last_flash_count` | Gauge | Total flash count from API |
-| `invaders_bot_sync_duration_seconds` | Histogram | Sync operation duration |
-| `invaders_bot_messages_published_total` | Counter | RabbitMQ messages published |
-| `invaders_bot_casts_published_total` | Counter | Farcaster casts published |
-| `invaders_bot_uptime_seconds` | Gauge | Service uptime |
-| `invaders_bot_memory_bytes{type}` | Gauge | Memory usage |
+| Variable | Description |
+|----------|-------------|
+| `FLASHCASTR_API_TARGET` | API service metrics endpoint |
+| `FLASH_ENGINE_TARGET` | Flash engine metrics endpoint |
+| `DATABASE_ENGINE_TARGET` | Database engine metrics endpoint |
+| `IMAGE_ENGINE_TARGET` | Image engine metrics endpoint |
+| `NEYNAR_ENGINE_TARGET` | Neynar engine metrics endpoint |
 
-### Consumer Metrics (Port 9091)
+### Service Configuration
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `invaders_consumer_flashes_processed_total` | Counter | Flashes successfully processed |
-| `invaders_consumer_flashes_failed_total` | Counter | Failed flash processing |
-| `invaders_consumer_ipfs_uploads_total` | Counter | Successful IPFS uploads |
-| `invaders_consumer_ipfs_failures_total` | Counter | Failed IPFS uploads |
-| `invaders_consumer_processing_duration_seconds` | Histogram | Processing duration |
-| `invaders_consumer_queue_depth` | Gauge | RabbitMQ queue depth |
-| `invaders_consumer_circuit_breaker_state` | Gauge | Circuit breaker (0=closed, 1=open) |
-| `invaders_consumer_consecutive_failures` | Gauge | Consecutive failures |
-| `invaders_consumer_uptime_seconds` | Gauge | Service uptime |
-| `invaders_consumer_memory_bytes{type}` | Gauge | Memory usage |
+| Variable | Description |
+|----------|-------------|
+| `TEMPO_HTTP_ENDPOINT` | Set on each service: `http://tempo-host:4318/v1/traces` |
+| `LOKI_URL` | Set on each service for log shipping: `http://loki-host:3100` |
 
-### API Metrics (Port 9092)
+## Configuring Services
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `flashcastr_api_graphql_requests_total` | Counter | GraphQL requests by operation |
-| `flashcastr_api_graphql_errors_total` | Counter | GraphQL errors by operation |
-| `flashcastr_api_graphql_duration_seconds` | Histogram | Request duration |
-| `flashcastr_api_signups_initiated_total` | Counter | Signup initiations |
-| `flashcastr_api_signups_completed_total` | Counter | Completed signups |
-| `flashcastr_api_users_deleted_total` | Counter | User deletions |
-| `flashcastr_api_cache_hits_total{cache_name}` | Counter | Cache hits |
-| `flashcastr_api_cache_misses_total{cache_name}` | Counter | Cache misses |
-| `flashcastr_api_neynar_requests_total` | Counter | Neynar API calls |
-| `flashcastr_api_active_users_total` | Gauge | Active users |
-| `flashcastr_api_total_flashes` | Gauge | Total flashes |
-| `flashcastr_api_uptime_seconds` | Gauge | Service uptime |
-| `flashcastr_api_memory_bytes{type}` | Gauge | Memory usage |
+### Metrics
 
-## Distributed Tracing with Tempo
+Each service exposes a `/metrics` endpoint via `prom-client`. Set `METRICS_PORT` on each service.
 
-Tempo collects distributed traces from services via OpenTelemetry Protocol (OTLP).
+### Tracing
 
-### How It Works
+Set the `TEMPO_HTTP_ENDPOINT` environment variable on each service to send traces to Tempo via OTLP HTTP.
 
-1. **Services send traces**: Producer and API services use OpenTelemetry SDK to send traces to Tempo
-2. **Tempo generates metrics**: The metrics generator creates RED metrics from traces
-3. **Prometheus scrapes metrics**: Tempo pushes metrics to Prometheus via remote write
-4. **Grafana visualizes**: Dashboard panels show trace-derived metrics
+### Logging
 
-### Trace Metrics Generated
-
-| Metric | Description |
-|--------|-------------|
-| `traces_spanmetrics_calls_total` | Request count by service |
-| `traces_spanmetrics_latency_bucket` | Request duration histogram |
-| `traces_service_graph_request_total` | Service-to-service call counts |
-
-### Configuring Services
-
-Set the `TEMPO_HTTP_ENDPOINT` environment variable on each service:
-
-```
-TEMPO_HTTP_ENDPOINT=http://tempo.railway.internal:4318/v1/traces
-```
-
-Currently configured services:
-- **invaders.bot** (Producer) - sends traces
-- **flashcastr.api** (API) - sends traces
-- **invaders.consumer** (Consumer) - does not send traces (runs on DigitalOcean)
+Set the `LOKI_URL` environment variable on each service. The `@flashcastr/logger` library batches and ships logs to Loki automatically.
 
 ## Customization
 
 ### Adding Panels
 
 1. Edit the dashboard JSON in `grafana/dashboards/`
-2. Use `grafana_prometheus` as the datasource UID
-3. Commit and redeploy
-
-### Changing Scrape Targets
-
-Update the environment variables in Railway:
-- `INVADERS_BOT_TARGET` - Producer metrics URL
-- `INVADERS_CONSUMER_TARGET` - Consumer metrics URL
-- `FLASHCASTR_API_TARGET` - API metrics URL
+2. Use `grafana_prometheus` as the datasource UID for metrics
+3. Use `grafana_lokiq` as the datasource UID for logs
+4. Commit and redeploy
 
 ---
 
