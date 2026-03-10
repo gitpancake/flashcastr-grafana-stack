@@ -1,0 +1,6 @@
+:3101 {
+    basicauth {
+        {$LOKI_BASIC_AUTH_USER} {$LOKI_BASIC_AUTH_HASH}
+    }
+    reverse_proxy loki:3100
+}
