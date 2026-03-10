@@ -15,7 +15,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Casts Published",
       "type": "stat",
-      "targets": [{ "expr": "neynar_engine_casts_published_total{job=\"neynar-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(neynar_engine_casts_published_total{job=\"neynar-engine\"}[$__range])", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -25,7 +25,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Cast Failures",
       "type": "stat",
-      "targets": [{ "expr": "neynar_engine_casts_failed_total{job=\"neynar-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(neynar_engine_casts_failed_total{job=\"neynar-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },

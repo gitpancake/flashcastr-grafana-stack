@@ -15,7 +15,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Flashes Stored",
       "type": "stat",
-      "targets": [{ "expr": "database_engine_flashes_stored_total{job=\"database-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(database_engine_flashes_stored_total{job=\"database-engine\"}[$__range])", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -25,7 +25,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Storage Failures",
       "type": "stat",
-      "targets": [{ "expr": "database_engine_flashes_failed_total{job=\"database-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(database_engine_flashes_failed_total{job=\"database-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },

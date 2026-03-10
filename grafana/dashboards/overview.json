@@ -220,7 +220,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Signups Completed",
       "type": "stat",
-      "targets": [{ "expr": "flashcastr_api_signups_completed_total{job=\"flashcastr-api\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(flashcastr_api_signups_completed_total{job=\"flashcastr-api\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -270,7 +270,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Paris Flashes Filtered",
       "type": "stat",
-      "targets": [{ "expr": "flash_engine_paris_flashes_filtered_total{job=\"flash-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(flash_engine_paris_flashes_filtered_total{job=\"flash-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "collapsed": false,

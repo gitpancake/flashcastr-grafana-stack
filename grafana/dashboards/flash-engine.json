@@ -25,7 +25,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Flashes Published",
       "type": "stat",
-      "targets": [{ "expr": "flash_engine_flashes_published_total{job=\"flash-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(flash_engine_flashes_published_total{job=\"flash-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -35,7 +35,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Paris Flashes Filtered",
       "type": "stat",
-      "targets": [{ "expr": "flash_engine_paris_flashes_filtered_total{job=\"flash-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(flash_engine_paris_flashes_filtered_total{job=\"flash-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },

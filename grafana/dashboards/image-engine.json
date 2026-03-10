@@ -15,7 +15,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "Images Processed",
       "type": "stat",
-      "targets": [{ "expr": "image_engine_images_processed_total{job=\"image-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(image_engine_images_processed_total{job=\"image-engine\"}[$__range])", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -25,7 +25,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "IPFS Uploads",
       "type": "stat",
-      "targets": [{ "expr": "image_engine_ipfs_uploads_total{job=\"image-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(image_engine_ipfs_uploads_total{job=\"image-engine\"}[$__range])", "refId": "A" }]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
@@ -35,7 +35,7 @@
       "options": { "colorMode": "value", "graphMode": "area", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "title": "IPFS Failures",
       "type": "stat",
-      "targets": [{ "expr": "image_engine_ipfs_failures_total{job=\"image-engine\"}", "refId": "A" }]
+      "targets": [{ "expr": "increase(image_engine_ipfs_failures_total{job=\"image-engine\"}[$__range])", "refId": "A"}]
     },
     {
       "datasource": { "type": "prometheus", "uid": "grafana_prometheus" },
