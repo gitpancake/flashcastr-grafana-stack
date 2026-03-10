@@ -49,6 +49,7 @@ services:
     environment:
       - LOKI_BASIC_AUTH_USER=${LOKI_BASIC_AUTH_USER}
       - LOKI_BASIC_AUTH_HASH=${LOKI_BASIC_AUTH_HASH}
+      - LOKI_UPSTREAM=loki:3100
     depends_on:
       - loki
 
