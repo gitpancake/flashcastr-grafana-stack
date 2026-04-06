@@ -1,6 +1,11 @@
 :3101 {
-    basic_auth {
-        {$LOKI_BASIC_AUTH_USER} {$LOKI_BASIC_AUTH_HASH}
+    handle /ready {
+        respond "OK" 200
     }
-    reverse_proxy {$LOKI_UPSTREAM:loki:3100}
+    handle {
+        basic_auth {
+            {$LOKI_BASIC_AUTH_USER} {$LOKI_BASIC_AUTH_HASH}
+        }
+        reverse_proxy {$LOKI_UPSTREAM:loki:3100}
+    }
 }
