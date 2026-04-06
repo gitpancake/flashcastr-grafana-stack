@@ -1,0 +1,11 @@
+:3201 {
+    handle /ready {
+        respond "OK" 200
+    }
+    handle {
+        basic_auth {
+            {$TEMPO_BASIC_AUTH_USER} {$TEMPO_BASIC_AUTH_HASH}
+        }
+        reverse_proxy {$TEMPO_UPSTREAM:tempo:3200}
+    }
+}

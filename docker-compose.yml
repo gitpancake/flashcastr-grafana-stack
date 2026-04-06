@@ -53,6 +53,32 @@ services:
     depends_on:
       - loki
 
+  prom-gateway:
+    build:
+      context: ./prom-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "9091:9091"
+    environment:
+      - PROM_BASIC_AUTH_USER=${PROM_BASIC_AUTH_USER}
+      - PROM_BASIC_AUTH_HASH=${PROM_BASIC_AUTH_HASH}
+      - PROM_UPSTREAM=prometheus:9090
+    depends_on:
+      - prometheus
+
+  tempo-gateway:
+    build:
+      context: ./tempo-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3201:3201"
+    environment:
+      - TEMPO_BASIC_AUTH_USER=${TEMPO_BASIC_AUTH_USER}
+      - TEMPO_BASIC_AUTH_HASH=${TEMPO_BASIC_AUTH_HASH}
+      - TEMPO_UPSTREAM=tempo:3200
+    depends_on:
+      - tempo
+
   grafana:
     build:
       context: ./grafana

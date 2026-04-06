@@ -19,6 +19,11 @@ Tempo also generates RED metrics and pushes them to Prometheus via remote write.
 - **Loki 3.4** — log aggregation (TSDB schema, filesystem storage)
 - **Tempo 2.9.0** — distributed tracing (OTLP gRPC :4317, HTTP :4318)
 - **Grafana 11.5.2** — dashboards and visualization
+- **prom-gateway** — Caddy basic auth proxy for Prometheus (:9091)
+- **loki-gateway** — Caddy basic auth proxy for Loki (:3101)
+- **tempo-gateway** — Caddy basic auth proxy for Tempo (:3201)
+
+Gateways allow the consolidated Grafana at `grafana.henrypye.xyz` to query backends remotely.
 
 ## Dashboards (7 total)
 
@@ -60,6 +65,11 @@ Prometheus scrape targets (set in docker-compose or Railway):
 - `DATABASE_ENGINE_TARGET`
 - `IMAGE_ENGINE_TARGET`
 - `NEYNAR_ENGINE_TARGET`
+
+Gateway auth (bcrypt hashes — generate with `caddy hash-password --plaintext 'password'`):
+- `LOKI_BASIC_AUTH_USER` / `LOKI_BASIC_AUTH_HASH`
+- `PROM_BASIC_AUTH_USER` / `PROM_BASIC_AUTH_HASH`
+- `TEMPO_BASIC_AUTH_USER` / `TEMPO_BASIC_AUTH_HASH`
 
 ## Key Files
 

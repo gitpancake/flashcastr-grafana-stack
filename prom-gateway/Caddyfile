@@ -1,0 +1,11 @@
+:9091 {
+    handle /ready {
+        respond "OK" 200
+    }
+    handle {
+        basic_auth {
+            {$PROM_BASIC_AUTH_USER} {$PROM_BASIC_AUTH_HASH}
+        }
+        reverse_proxy {$PROM_UPSTREAM:prometheus:9090}
+    }
+}
