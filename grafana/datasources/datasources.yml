@@ -32,15 +32,3 @@ datasources:
     basicAuthUser:
     withCredentials:
     isDefault: false
-  - name: Tempo
-    type: tempo
-    access: proxy
-    orgId: 1
-    uid: grafana_tempo
-    url: $TEMPO_INTERNAL_URL
-    user:
-    database:
-    basicAuth:
-    basicAuthUser:
-    withCredentials:
-    isDefault: false

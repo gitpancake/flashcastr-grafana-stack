@@ -17,11 +17,6 @@ scrape_configs:
       - targets: ["${FLASH_ENGINE_TARGET}"]
     metrics_path: /metrics
 
-  - job_name: "database-engine"
-    static_configs:
-      - targets: ["${DATABASE_ENGINE_TARGET}"]
-    metrics_path: /metrics
-
   - job_name: "image-engine"
     static_configs:
       - targets: ["${IMAGE_ENGINE_TARGET}"]
